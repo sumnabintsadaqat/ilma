@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Amiri:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --font-arabic: "Amiri", serif;
+  
+  --color-parchment: #FDFBF7;
+  --color-ink: #2C2420;
+  --color-gold: #C5A059;
+  --color-sage: #8A9A5B;
+}
+
+@layer base {
+  body {
+    @apply bg-parchment text-ink font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
+
+.arabic-naskh {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  line-height: 2;
+}
+
+.gold-accent {
+  @apply text-gold;
+}
+
+.ink-text {
+  @apply text-ink;
+}
+
+.sage-text {
+  @apply text-sage;
+}

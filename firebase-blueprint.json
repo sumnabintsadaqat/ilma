@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the Ilm platform, either a teacher or a student.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The full name of the user." },
+        "email": { "type": "string", "description": "The email address of the user." },
+        "role": { "type": "string", "enum": ["teacher", "student"], "description": "The role of the user." }
+      },
+      "required": ["name", "email", "role"]
+    },
+    "Session": {
+      "title": "Session",
+      "description": "A daily lesson log entry.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time", "description": "The date of the session." },
+        "title": { "type": "string", "description": "The title of the lesson." },
+        "phase": { "type": "integer", "description": "The phase number (1, 2, or 3)." },
+        "objectives": { "type": "array", "items": { "type": "string" }, "description": "A list of learning objectives." },
+        "sharedNotes": { "type": "string", "description": "Notes visible to both teacher and student." },
+        "privateNotes": { "type": "string", "description": "Notes visible only to the teacher." },
+        "completed": { "type": "boolean", "description": "Whether the session is completed." }
+      },
+      "required": ["date", "title", "phase", "completed"]
+    },
+    "HifzSession": {
+      "title": "HifzSession",
+      "description": "A Quran revision session log.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time", "description": "The date of the revision." },
+        "juz": { "type": "integer", "description": "The Juz number (1-30)." },
+        "fromSurah": { "type": "string", "description": "Starting surah name." },
+        "fromAyah": { "type": "integer", "description": "Starting ayah number." },
+        "toSurah": { "type": "string", "description": "Ending surah name." },
+        "toAyah": { "type": "integer", "description": "Ending ayah number." },
+        "quality": { "type": "integer", "description": "Quality rating (1-5 stars)." },
+        "notes": { "type": "string", "description": "Optional notes on the revision." }
+      },
+      "required": ["date", "juz", "quality"]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "A project in the 6-month journey.",
+      "type": "object",
+      "properties": {
+        "phase": { "type": "integer", "description": "The phase number (1, 2, or 3)." },
+        "pillar": { "type": "string", "enum": ["reading", "writing", "maths", "business", "combined"], "description": "The subject pillar." },
+        "status": { "type": "string", "enum": ["not started", "in progress", "submitted", "reviewed"], "description": "The current status of the project." },
+        "title": { "type": "string", "description": "The title of the project." },
+        "description": { "type": "string", "description": "The project brief." },
+        "dueDate": { "type": "string", "format": "date-time", "description": "The deadline for the project." },
+        "submissionText": { "type": "string", "description": "The student's submitted text." },
+        "submissionUrl": { "type": "string", "description": "Optional URL link for the submission." },
+        "feedback": { "type": "string", "description": "Teacher's feedback." },
+        "grade": { "type": "integer", "description": "Grade out of 100." },
+        "studentUid": { "type": "string", "description": "The UID of the student this project belongs to." }
+      },
+      "required": ["phase", "pillar", "status", "title", "description"]
+    },
+    "ReadingLog": {
+      "title": "ReadingLog",
+      "description": "An entry in the reading log.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time", "description": "The date of the reading session." },
+        "title": { "type": "string", "description": "The title of the book." },
+        "author": { "type": "string", "description": "The author of the book." },
+        "pagesRead": { "type": "integer", "description": "Number of pages read in this session." },
+        "totalPages": { "type": "integer", "description": "Total pages in the book." },
+        "notes": { "type": "string", "description": "General notes." },
+        "reflection": { "type": "string", "description": "Personal reflection on the reading." }
+      },
+      "required": ["date", "title", "author", "pagesRead", "totalPages"]
+    },
+    "WritingEntry": {
+      "title": "WritingEntry",
+      "description": "A journal or essay entry.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time", "description": "The date of the entry." },
+        "type": { "type": "string", "enum": ["journal", "essay", "summary", "reflection"], "description": "The type of writing." },
+        "title": { "type": "string", "description": "The title of the entry." },
+        "content": { "type": "string", "description": "The full content of the writing." },
+        "wordCount": { "type": "integer", "description": "Auto-calculated word count." },
+        "feedback": { "type": "string", "description": "Teacher's feedback." }
+      },
+      "required": ["date", "type", "title", "content"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profiles." },
+    "/sessions/{sessionId}": { "schema": "Session", "description": "Daily lesson logs." },
+    "/hifz_sessions/{hifzId}": { "schema": "HifzSession", "description": "Quran revision logs." },
+    "/projects/{projectId}": { "schema": "Project", "description": "Educational projects." },
+    "/reading_logs/{logId}": { "schema": "ReadingLog", "description": "Reading session logs." },
+    "/writing_entries/{entryId}": { "schema": "WritingEntry", "description": "Writing journal and essays." }
+  }
+}

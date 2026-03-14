@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: users
+    // Fields: name (string), email (string), role (string: 'teacher'|'student')
+    //
+    // Collection: sessions
+    // Fields: date (timestamp), title (string), phase (int), objectives (list), 
+    //         sharedNotes (string), privateNotes (string), completed (bool)
+    //
+    // Collection: hifz_sessions
+    // Fields: date (timestamp), juz (int), fromSurah (string), fromAyah (int),
+    //         toSurah (string), toAyah (int), quality (int), notes (string)
+    //
+    // Collection: projects
+    // Fields: phase (int), pillar (string), status (string), title (string),
+    //         description (string), dueDate (timestamp), submissionText (string),
+    //         submissionUrl (string), feedback (string), grade (int), studentUid (string)
+    //
+    // Collection: reading_logs
+    // Fields: date (timestamp), title (string), author (string), pagesRead (int),
+    //         totalPages (int), notes (string), reflection (string)
+    //
+    // Collection: writing_entries
+    // Fields: date (timestamp), type (string), title (string), content (string),
+    //         wordCount (int), feedback (string)
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isTeacher() {
+      return isAuthenticated() && 
+        (getUserData().role == 'teacher' || 
+         (request.auth.token.email == "sumnabintsadaqat@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isStudent() {
+      return isAuthenticated() && getUserData().role == 'student';
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId) && 
+                    hasOnlyAllowedFields(['name', 'email', 'role']) &&
+                    request.resource.data.role in ['teacher', 'student'];
+      allow update: if isTeacher() || (isOwner(userId) && request.resource.data.role == resource.data.role);
+    }
+
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow write: if isTeacher();
+    }
+
+    match /hifz_sessions/{hifzId} {
+      allow read: if isAuthenticated();
+      allow create: if isStudent() || isTeacher();
+      allow update, delete: if isTeacher() || isStudent(); // Student logs their own revision
+    }
+
+    match /projects/{projectId} {
+      allow read: if isAuthenticated();
+      allow create: if isTeacher();
+      allow update: if isTeacher() || (isStudent() && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['submissionText', 'submissionUrl', 'status']) &&
+                    request.resource.data.status == 'submitted');
+    }
+
+    match /reading_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isStudent() || isTeacher();
+    }
+
+    match /writing_entries/{entryId} {
+      allow read: if isAuthenticated();
+      allow create: if isStudent() || isTeacher();
+      allow update: if isTeacher() || (isStudent() && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'wordCount', 'title', 'date', 'type']));
+    }
+  }
+}
